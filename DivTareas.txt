@@ -1,0 +1,47 @@
+Proyecto 2 SOA
+
+Frontend Cloud Function: (Gerald)
+- Mostrar menu del restaurante
+- ⁠UI de recomendación de comida
+- UI de recomendación de hora
+- ⁠UI de chatbot para feedback
+- ⁠unit tests
+
+	
+
+Backend: (Ignacio)
+
+
+Recomendar Menu: (Yordi)
+
+- recibir información de las preferencias del usuario?
+- ⁠recomendar platos del menu que se ajusten a las preferencias 
+- ⁠unit test
+
+Recomendar Hora: (Adriana)
+- generar recomendaciones de hora teniendo en cuenta disponibilidad y demanda
+- ⁠unit test
+
+Google Cloud Natural Lenguage API: (Andrey)
+- Hacer consultas al backend?
+- ⁠Analizar en sentimiento del usuario (no hace falta almacenar el feedback, solo el resultado del análisis)
+- ⁠unit test
+
+Docu:
+- Descripción de arquitectura (Yerald)
+- Diagrama de arquitectura (Yerald)
+- Descripción de Cloud Functions (Todos)
+- ⁠Interaccion entre los servicios (Ignacio)
+- ⁠Seguridad y escalabilidas (Andrey)
+- ⁠Gestion de errores (Ignacio)
+- ⁠estrategias de despliegue (Yordi)
+- ⁠costos (Adriana)
+- ⁠pruebas (Todos)
+
+
+
+Cosas que dijo la profe 
+Docu:
+	Cual es el servicio principal?
+	Cual es el dominio de cada servicio
+Usar storage buckets para almacenamiento 
