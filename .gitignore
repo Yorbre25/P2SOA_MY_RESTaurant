@@ -1,0 +1,4 @@
+
+*.package-lock.json
+backend_cloud_func/node_modules
+reservation_cloud_func/node_modules
