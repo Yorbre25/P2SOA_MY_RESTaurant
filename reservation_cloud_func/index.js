@@ -1,10 +1,10 @@
 const express = require('express');
-const { Firestore } = require('@google-cloud/firestore');
+const { Firestore, Timestamp } = require('@google-cloud/firestore');
 
+// Inicializa Express y Firestore
 const app = express();
-app.use(express.json());
-
 const firestore = new Firestore();
+app.use(express.json());
 
 // Middleware para manejar errores de parseo JSON
 app.use((err, req, res, next) => {
@@ -15,75 +15,60 @@ app.use((err, req, res, next) => {
   next();
 });
 
-// Función para añadir una reserva a Firestore
-async function crearReserva({ fecha, hora, nombre, invitados }) {
-  try {
-    const reservaId = `${fecha}:${hora}`; // Generar un ID único basado en fecha y hora
-    const reservaRef = firestore.collection('reservas').doc(reservaId);
-    const doc = await reservaRef.get();
+// Endpoint para obtener todas las reservas
+app.get('/obtener-reservas', async (req, res) => {
+    const reservasRef = firestore.collection('reservas');
+    const snapshot = await reservasRef.get();
 
-    if (doc.exists) {
-      // Manejar el caso de que ya exista una reserva en esa fecha y hora
-      return { error: true, mensaje: "Ya existe una reserva en esta fecha y hora." };
-    } else {
-      await reservaRef.set({ fecha, hora, nombre, invitados });
-      return { error: false, mensaje: "Reserva creada exitosamente." };
+    if (snapshot.empty) {
+        return res.status(404).json({ mensaje: "No se encontraron reservas." });
     }
-  } catch (error) {
-    console.error("Error al crear la reserva:", error);
-    return { error: true, mensaje: "Error al procesar la solicitud." };
-  }
-}
 
-// Función para obtener reservas de una fecha específica de Firestore
-async function obtenerReservasPorFecha(fecha) {
-  const reservasRef = firestore.collection('reservas');
-  const snapshot = await reservasRef.where('fecha', '==', fecha).get();
+    const reservas = [];
+    snapshot.forEach(doc => {
+        const data = doc.data();
+        // Convierte el Timestamp a un objeto Date y luego a un string formateado
+        const fechaHora = data.datetime.toDate(); // Asegúrate de que 'datetime' es el campo correcto
+        const opciones = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short', hour12: true };
+        const fechaHoraStr = fechaHora.toLocaleString('es-MX', opciones);
 
-  if (snapshot.empty) {
-    return null;
-  }
+        reservas.push({
+            datetime: fechaHoraStr,
+            name: data.name,
+            invitees: data.invitees,
+        });
+    });
 
-  const reservas = [];
-  snapshot.forEach(doc => {
-    reservas.push(doc.data());
-  });
-
-  return reservas;
-}
+    res.status(200).json(reservas);
+});
 
 // Endpoint para crear una reserva
 app.post('/crear-reserva', async (req, res) => {
-  const resultado = await crearReserva(req.body);
-  if (resultado.error) {
-    res.status(500).json({ mensaje: resultado.mensaje });
-  } else {
-    res.status(200).json({ mensaje: resultado.mensaje });
-  }
-});
+    const { date, time, name, invitees } = req.body;
+    // Combina 'fecha' y 'hora' para crear un objeto Date de JavaScript
+    const dateTime = new Date(`${date}T${time}:00.000Z`); // Añade :00.000Z para asegurar el formato correcto
 
-// Endpoint para obtener reservas de una fecha específica
-app.get('/obtener-reservas', async (req, res) => {
-  const { fecha } = req.query;
-
-  if (!fecha) {
-    return res.status(400).send({ mensaje: 'Debe proporcionar una fecha.' });
-  }
-
-  const reservas = await obtenerReservasPorFecha(fecha);
-  if (reservas) {
-    res.status(200).json(reservas);
-  } else {
-    res.status(404).json({ mensaje: "No se encontraron reservas para esta fecha." });
-  }
+    try {
+        const reservaRef = firestore.collection('reservas').doc(); // Usando un ID autogenerado
+        await reservaRef.set({
+            datetime: Timestamp.fromDate(dateTime), // Convierte 'dateTime' a Timestamp
+            name: name,
+            invitees: invitees,
+        });
+        res.status(200).json({ mensaje: "Reserva creada exitosamente." });
+    } catch (error) {
+        console.error("Error al crear la reserva:", error);
+        res.status(500).json({ mensaje: "Error al procesar la solicitud." });
+    }
 });
 
 // Manejar solicitudes GET en la ruta raíz
 app.get('/', (req, res) => {
-  res.send('¡Bienvenido a la página principal de MYRESTaurant Reservas!');
+    res.send('¡Bienvenido a la página principal de MYRESTaurant Reservas!');
 });
 
+// Inicia el servidor
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-  console.log(`Servidor escuchando en el puerto ${PORT}`);
+    console.log(`Servidor escuchando en el puerto ${PORT}`);
 });
