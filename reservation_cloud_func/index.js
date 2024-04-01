@@ -1,74 +1,113 @@
 const express = require('express');
 const { Firestore, Timestamp } = require('@google-cloud/firestore');
 
-// Inicializa Express y Firestore
 const app = express();
 const firestore = new Firestore();
 app.use(express.json());
 
-// Middleware para manejar errores de parseo JSON
-app.use((err, req, res, next) => {
-  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    console.error('Error de parseo JSON:', err);
-    return res.status(400).send({ mensaje: 'Cuerpo de solicitud inválido o mal formado.' });
-  }
-  next();
-});
+const TOTAL_TABLES = 4;
+const OPEN_HOUR = 9; // 9 AM in 24-hour format
+const CLOSE_HOUR = 21; // 9 PM in 24-hour format
 
-// Endpoint para obtener todas las reservas
-app.get('/obtener-reservas', async (req, res) => {
-    const reservasRef = firestore.collection('reservas');
-    const snapshot = await reservasRef.get();
+app.post('/create-reservation', async (req, res) => {
+    const { date, time, name, invitees } = req.body;
 
-    if (snapshot.empty) {
-        return res.status(404).json({ mensaje: "No se encontraron reservas." });
+    // Combine date and time and create a JavaScript Date object
+    const dateTime = new Date(`${date}T${time}:00.000Z`);
+    const reservationHour = dateTime.getUTCHours();
+
+    // Check if the reservation time is within operational hours
+    if (reservationHour < OPEN_HOUR || reservationHour >= CLOSE_HOUR || !(dateTime.getMinutes() === 0 || dateTime.getMinutes() === 30)) {
+        return res.status(400).json({ message: "Reservations can only be made from 9 AM to 9 PM, on the hour or half past." });
     }
 
-    const reservas = [];
+    // Define the start and end time of the reservation
+    const reservationStart = Timestamp.fromDate(dateTime);
+    const reservationEnd = Timestamp.fromDate(new Date(dateTime.getTime() + 60 * 60 * 1000)); // Plus 1 hour
+
+    // Check for table availability
+    try {
+        const availableTables = await checkTableAvailability(reservationStart, reservationEnd);
+
+        if (availableTables.length === 0) {
+            return res.status(400).json({ message: "No tables available for this date and time." });
+        }
+
+        // Assign the first available table
+        const assignedTable = availableTables[0];
+
+        // Create the reservation with the assigned table
+        await firestore.collection('reservations').add({
+            reservationStart,
+            reservationEnd,
+            name,
+            invitees,
+            table: assignedTable
+        });
+
+        res.status(200).json({ message: "Reservation successfully created with table #" + assignedTable });
+    } catch (error) {
+        console.error("Error creating reservation:", error);
+        res.status(500).json({ message: "Error processing request." });
+    }
+});
+
+async function checkTableAvailability(start, end) {
+    const snapshot = await firestore.collection('reservations')
+        .where('reservationEnd', '>', start)
+        .where('reservationStart', '<', end)
+        .get();
+
+    const occupiedTables = snapshot.docs.map(doc => doc.data().table);
+    const availableTables = [];
+
+    for (let i = 1; i <= TOTAL_TABLES; i++) {
+        if (!occupiedTables.includes(i)) {
+            availableTables.push(i);
+        }
+    }
+
+    return availableTables;
+}
+
+// GET endpoint to list all reservations
+app.get('/get-reservations', async (req, res) => {
+    const reservationsRef = firestore.collection('reservations');
+    const snapshot = await reservationsRef.get();
+
+    if (snapshot.empty) {
+        return res.status(404).json({ message: "No reservations found." });
+    }
+
+    const reservations = [];
     snapshot.forEach(doc => {
         const data = doc.data();
-        // Convierte el Timestamp a un objeto Date y luego a un string formateado
-        const fechaHora = data.datetime.toDate(); // Asegúrate de que 'datetime' es el campo correcto
-        const opciones = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short', hour12: true };
-        const fechaHoraStr = fechaHora.toLocaleString('es-MX', opciones);
+        const start = data.reservationStart.toDate();
+        const end = data.reservationEnd.toDate();
 
-        reservas.push({
-            datetime: fechaHoraStr,
+        const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short', hour12: true };
+        const startStr = start.toLocaleString('en-US', options);
+        const endStr = end.toLocaleString('en-US', options);
+
+        reservations.push({
+            start: startStr,
+            end: endStr,
             name: data.name,
             invitees: data.invitees,
+            table: data.table
         });
     });
 
-    res.status(200).json(reservas);
+    res.status(200).json(reservations);
 });
 
-// Endpoint para crear una reserva
-app.post('/crear-reserva', async (req, res) => {
-    const { date, time, name, invitees } = req.body;
-    // Combina 'fecha' y 'hora' para crear un objeto Date de JavaScript
-    const dateTime = new Date(`${date}T${time}:00.000Z`); // Añade :00.000Z para asegurar el formato correcto
-
-    try {
-        const reservaRef = firestore.collection('reservas').doc(); // Usando un ID autogenerado
-        await reservaRef.set({
-            datetime: Timestamp.fromDate(dateTime), // Convierte 'dateTime' a Timestamp
-            name: name,
-            invitees: invitees,
-        });
-        res.status(200).json({ mensaje: "Reserva creada exitosamente." });
-    } catch (error) {
-        console.error("Error al crear la reserva:", error);
-        res.status(500).json({ mensaje: "Error al procesar la solicitud." });
-    }
-});
-
-// Manejar solicitudes GET en la ruta raíz
+// Root GET request handler
 app.get('/', (req, res) => {
-    res.send('¡Bienvenido a la página principal de MYRESTaurant Reservas!');
+    res.send('Welcome to the MYRESTaurant Reservation System!');
 });
 
-// Inicia el servidor
+// Start the server
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-    console.log(`Servidor escuchando en el puerto ${PORT}`);
+    console.log(`Server listening on port ${PORT}`);
 });
