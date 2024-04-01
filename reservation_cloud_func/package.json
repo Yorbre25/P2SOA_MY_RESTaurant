@@ -10,7 +10,8 @@
     "dependencies": {
         "@google-cloud/firestore": "^7.5.0",
         "@google-cloud/language": "^4.0.0",
-        "express": "^4.17.1"
+        "express": "^4.17.1",
+        "express-validator": "^7.0.1"
     },
     "devDependencies": {
         "@google-cloud/functions-framework": "^3.3.0"
