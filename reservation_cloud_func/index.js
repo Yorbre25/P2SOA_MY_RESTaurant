@@ -7,8 +7,8 @@ const firestore = new Firestore();
 app.use(express.json());
 
 const TOTAL_TABLES = 4;
-const OPEN_HOUR = 9; // 9 AM in 24-hour format
-const CLOSE_HOUR = 21; // 9 PM in 24-hour format
+const OPEN_HOUR = 12; // 10 AM in 24-hour format
+const CLOSE_HOUR = 23; // 9 PM in 24-hour format
 
 app.post('/create-reservation', async (req, res) => {
     const { date, time, name, invitees } = req.body; // Expecting date & time as strings, e.g., date: "2024-03-31", time: "13:00"
@@ -99,59 +99,53 @@ app.get('/get-reservations', async (req, res) => {
 
 
 app.get('/recommend-reservation-time', async (req, res) => {
-    const { mealType, date } = req.query; // mealType: 'brunch', 'lunch', 'merienda', 'dinner'; date: 'YYYY-MM-DD'
+    const { mealType, date } = req.query;
 
-    // Define hour ranges for each meal type
     const mealRanges = {
-        brunch: { start: 9, end: 11 }, // 9 AM - 11 AM
-        lunch: { start: 12, end: 14 }, // 12 PM - 2 PM
-        coffee: { start: 15, end: 17 }, // 3 PM - 5 PM
-        dinner: { start: 18, end: 20 } // 6 PM - 8 PM
+        lunch: { start: OPEN_HOUR, end: 14 },
+        coffee: { start: 15, end: 17 },
+        dinner: { start: 18, end: CLOSE_HOUR }
     };
 
     const range = mealRanges[mealType];
     if (!range) {
-        return res.status(400).json({ message: "Invalid meal type. Choose 'brunch', 'lunch', 'coffee', or 'dinner'." });
+        return res.status(400).json({ message: "Invalid meal type. Choose 'lunch', 'coffee', or 'dinner'." });
     }
 
-    try {
-        // Convert start and end of the meal range to Timestamps
-        const dayStart = new Date(`${date}T${range.start}:00:00.000Z`);
-        const dayEnd = new Date(`${date}T${range.end}:59:59.999Z`);
-        const reservationsSnapshot = await firestore.collection('reservations')
-            .where('reservationStart', '>=', Timestamp.fromDate(dayStart))
-            .where('reservationStart', '<=', Timestamp.fromDate(dayEnd))
-            .get();
+    let hourAvailabilities = [];
+    let maxAvailableTables = 0;
+    let bestHour = null;
 
-        // Calculate availability for each hour within the meal range
-        let hourlyAvailability = {};
-        for (let hour = range.start; hour <= range.end; hour++) {
-            hourlyAvailability[hour] = 0; // Initialize reservation count per hour
-        }
+    for (let hour = range.start; hour <= range.end; hour++) {
+        const startOfHour = Timestamp.fromDate(new Date(`${date}T${hour.toString().padStart(2, '0')}:00:00.000Z`));
+        const endOfHour = Timestamp.fromDate(new Date(`${date}T${(hour + 1).toString().padStart(2, '0')}:00:00.000Z`));
 
-        reservationsSnapshot.forEach(doc => {
-            const reservationHour = doc.data().reservationStart.toDate().getUTCHours();
-            hourlyAvailability[reservationHour]++;
+        const availableTables = await checkTableAvailability(startOfHour, endOfHour);
+        const numAvailableTables = availableTables.length;
+
+        hourAvailabilities.push({
+            hour: `${hour}:00`,
+            availableTables: numAvailableTables,
+            tables: availableTables // Including the table numbers might be optional based on your need
         });
 
-        // Find the hour with the fewest reservations
-        const bestHour = Object.entries(hourlyAvailability)
-            .sort((a, b) => a[1] - b[1]) // Sort by fewest number of reservations
-            .map(entry => entry[0])[0]; // Take the first one
-
-        if (bestHour !== undefined) {
-            res.status(200).json({
-                message: "Recommended hour for your reservation:",
-                bestHour: `${bestHour}:00`
-            });
-        } else {
-            res.status(400).json({ message: "No available hours found within the selected range." });
+        // Determine the best hour based on the maximum number of available tables
+        if (numAvailableTables > maxAvailableTables) {
+            maxAvailableTables = numAvailableTables;
+            bestHour = `${hour}:00`;
         }
-    } catch (error) {
-        console.error("Error recommending reservation time:", error);
-        res.status(500).json({ message: "Error processing request." });
     }
+
+    res.status(200).json({
+        date: date,
+        mealType: mealType,
+        availabilities: hourAvailabilities,
+        bestHour: bestHour ? { hour: bestHour, availableTables: maxAvailableTables } : "No available times found within the selected range."
+    });
 });
+
+
+
 
 
 // Root GET request handler
