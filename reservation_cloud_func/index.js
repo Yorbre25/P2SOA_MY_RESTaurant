@@ -1,5 +1,6 @@
 const express = require('express');
 const { Firestore, Timestamp } = require('@google-cloud/firestore');
+const moment = require('moment-timezone');
 
 const app = express();
 const firestore = new Firestore();
@@ -10,33 +11,28 @@ const OPEN_HOUR = 9; // 9 AM in 24-hour format
 const CLOSE_HOUR = 21; // 9 PM in 24-hour format
 
 app.post('/create-reservation', async (req, res) => {
-    const { date, time, name, invitees } = req.body;
+    const { date, time, name, invitees } = req.body; // Expecting date & time as strings, e.g., date: "2024-03-31", time: "13:00"
 
-    // Combine date and time and create a JavaScript Date object
-    const dateTime = new Date(`${date}T${time}:00.000Z`);
-    const reservationHour = dateTime.getUTCHours();
+    // Convertir la hora proporcionada a la zona horaria UTC-6
+    const dateTimeInUTC6 = moment.tz(`${date}T${time}:00`, 'America/Belize');
 
-    // Check if the reservation time is within operational hours
-    if (reservationHour < OPEN_HOUR || reservationHour >= CLOSE_HOUR || !(dateTime.getMinutes() === 0 || dateTime.getMinutes() === 30)) {
-        return res.status(400).json({ message: "Reservations can only be made from 9 AM to 9 PM, on the hour or half past." });
+    // Validar que la reservación está dentro del horario de operaciones
+    const reservationHour = dateTimeInUTC6.hour();
+    if (reservationHour < OPEN_HOUR || reservationHour >= CLOSE_HOUR || !(dateTimeInUTC6.minutes() === 0 || dateTimeInUTC6.minutes() === 30)) {
+        return res.status(400).json({ message: "Reservations can only be made from 9 AM to 9 PM, on the hour or half past in UTC-6." });
     }
 
-    // Define the start and end time of the reservation
-    const reservationStart = Timestamp.fromDate(dateTime);
-    const reservationEnd = Timestamp.fromDate(new Date(dateTime.getTime() + 60 * 60 * 1000)); // Plus 1 hour
+    // Preparar los Timestamps para Firestore
+    const reservationStart = Timestamp.fromDate(dateTimeInUTC6.toDate());
+    const reservationEnd = Timestamp.fromDate(dateTimeInUTC6.add(1, 'hours').toDate());
 
-    // Check for table availability
     try {
         const availableTables = await checkTableAvailability(reservationStart, reservationEnd);
-
         if (availableTables.length === 0) {
             return res.status(400).json({ message: "No tables available for this date and time." });
         }
 
-        // Assign the first available table
         const assignedTable = availableTables[0];
-
-        // Create the reservation with the assigned table
         await firestore.collection('reservations').add({
             reservationStart,
             reservationEnd,
@@ -70,7 +66,7 @@ async function checkTableAvailability(start, end) {
     return availableTables;
 }
 
-// GET endpoint to list all reservations
+
 app.get('/get-reservations', async (req, res) => {
     const reservationsRef = firestore.collection('reservations');
     const snapshot = await reservationsRef.get();
@@ -85,9 +81,9 @@ app.get('/get-reservations', async (req, res) => {
         const start = data.reservationStart.toDate();
         const end = data.reservationEnd.toDate();
 
-        const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short', hour12: true };
-        const startStr = start.toLocaleString('en-US', options);
-        const endStr = end.toLocaleString('en-US', options);
+        // Convertir y formatear las fechas a UTC-6
+        const startStr = moment(start).tz('Etc/GMT+6').format('MMMM D, YYYY [at] h:mm:ss A [UTC-6]');
+        const endStr = moment(end).tz('Etc/GMT+6').format('MMMM D, YYYY [at] h:mm:ss A [UTC-6]');
 
         reservations.push({
             start: startStr,
@@ -100,6 +96,63 @@ app.get('/get-reservations', async (req, res) => {
 
     res.status(200).json(reservations);
 });
+
+
+app.get('/recommend-reservation-time', async (req, res) => {
+    const { mealType, date } = req.query; // mealType: 'brunch', 'lunch', 'merienda', 'dinner'; date: 'YYYY-MM-DD'
+
+    // Define hour ranges for each meal type
+    const mealRanges = {
+        brunch: { start: 9, end: 11 }, // 9 AM - 11 AM
+        lunch: { start: 12, end: 14 }, // 12 PM - 2 PM
+        coffee: { start: 15, end: 17 }, // 3 PM - 5 PM
+        dinner: { start: 18, end: 20 } // 6 PM - 8 PM
+    };
+
+    const range = mealRanges[mealType];
+    if (!range) {
+        return res.status(400).json({ message: "Invalid meal type. Choose 'brunch', 'lunch', 'coffee', or 'dinner'." });
+    }
+
+    try {
+        // Convert start and end of the meal range to Timestamps
+        const dayStart = new Date(`${date}T${range.start}:00:00.000Z`);
+        const dayEnd = new Date(`${date}T${range.end}:59:59.999Z`);
+        const reservationsSnapshot = await firestore.collection('reservations')
+            .where('reservationStart', '>=', Timestamp.fromDate(dayStart))
+            .where('reservationStart', '<=', Timestamp.fromDate(dayEnd))
+            .get();
+
+        // Calculate availability for each hour within the meal range
+        let hourlyAvailability = {};
+        for (let hour = range.start; hour <= range.end; hour++) {
+            hourlyAvailability[hour] = 0; // Initialize reservation count per hour
+        }
+
+        reservationsSnapshot.forEach(doc => {
+            const reservationHour = doc.data().reservationStart.toDate().getUTCHours();
+            hourlyAvailability[reservationHour]++;
+        });
+
+        // Find the hour with the fewest reservations
+        const bestHour = Object.entries(hourlyAvailability)
+            .sort((a, b) => a[1] - b[1]) // Sort by fewest number of reservations
+            .map(entry => entry[0])[0]; // Take the first one
+
+        if (bestHour !== undefined) {
+            res.status(200).json({
+                message: "Recommended hour for your reservation:",
+                bestHour: `${bestHour}:00`
+            });
+        } else {
+            res.status(400).json({ message: "No available hours found within the selected range." });
+        }
+    } catch (error) {
+        console.error("Error recommending reservation time:", error);
+        res.status(500).json({ message: "Error processing request." });
+    }
+});
+
 
 // Root GET request handler
 app.get('/', (req, res) => {
