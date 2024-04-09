@@ -1,5 +1,5 @@
 import random
-from fastapi import HTTPException
+
 from models import Meal
 from database import IDataSource, init_data_source
 
@@ -39,14 +39,14 @@ class PredefinedRecommender:
     
     def check_recommendation_of(self, recommendation_of):
         if len(recommendation_of) == 0:
-            raise TypeError("The recommendation_of list can not be empty.")
+            raise ValueError("The recommendation_of list can not be empty.")
         for item in recommendation_of:
             if item not in ["main_dish", "drink", "dessert"]:
-                raise TypeError("Invalid recommendation type: " + item)        
+                raise ValueError("Invalid recommendation type: " + item)        
 
     def check_if_enough(self, posible_food_by_type):
         if len(posible_food_by_type["main_dish"]) == 0:
-            raise TypeError("There are no recommendations available for your input. Please try another one.")
+            raise ValueError("There are no recommendations available for your input. Please try another one.")
     
     
     def add_candidate_meal(self, posible_meals, meal):
@@ -63,11 +63,10 @@ class PredefinedRecommender:
     
     
 def get_predefined_recom(meal: Meal, recomendation_of: list[str]) -> str:
-    try:
-        response = predefined_recommender.recommend(meal, recomendation_of)
-        return response
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e)) from e
+    
+    response = predefined_recommender.recommend(meal, recomendation_of)
+    return response
+  
 
 
 def init_default_recommender(data_source):
@@ -76,8 +75,3 @@ def init_default_recommender(data_source):
 data_source = init_data_source()
 predefined_recommender = init_default_recommender(data_source)
 
-meal = Meal(main_dish="rice", drink="",dessert="")
-print(meal)
-
-
-print(get_predefined_recom(meal,["main_dish","drink","dessert"]))
