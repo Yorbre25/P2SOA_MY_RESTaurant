@@ -1,50 +1,32 @@
-[
-
-    {
-        "main_dish": "pizza",
-        "drink": "coke",
-        "dessert": "ice cream"
-        }
-        ,
-        {
-        "main_dish": "burger",
-        "drink": "lemonade",
-        "dessert": "chocolate cake"
-        }
-        ,
-        {
-        "main_dish": "pasta",
-        "drink": "iced tea",
-        "dessert": "tiramisu"
-        }
-        ,
-        {
-        "main_dish": "sushi",
-        "drink": "green tea",
-        "dessert": "mochi ice cream"
-        }
-        ,
-        {
-        "main_dish": "steak",
-        "drink": "red wine",
-        "dessert": "cheesecake"
-        }
-        ,
-        {
-        "main_dish": "fish and chips",
-        "drink": "beer",
-        "dessert": "apple pie"
-        }
-        ,
-        {
-        "main_dish": "tacos",
-        "drink": "margarita",
-        "dessert": "churros"
-        }
-        ,
-        {
-        "main_dish": "grilled chicken",
-        "drink": "iced coffee",
-        "dessert": "fruit salad"
-        }
-]
+{
+    "main_dishes": [
+        "pizza",
+        "burger",
+        "pasta",
+        "sushi",
+        "steak",
+        "fish and chips",
+        "tacos",
+        "grilled chicken"
+    ],
+    "drinks": [
+        "coke",
+        "lemonade",
+        "iced tea",
+        "green tea",
+        "red wine",
+        "beer",
+        "margarita",
+        "iced coffee"
+    ],
+    "desserts": [
+        "ice cream",
+        "chocolate cake",
+        "tiramisu",
+        "mochi ice cream",
+        "cheesecake",
+        "apple pie",
+        "churros",
+        "fruit salad"
+    ]
+}
