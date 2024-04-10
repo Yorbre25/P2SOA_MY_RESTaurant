@@ -20,9 +20,15 @@ def handle_validation_error(e):
 def handle_value_error(e):
     return str(e), 400
 
+@functions_framework.errorhandler(TypeError) #"If the main_dish/drink/dessert or type of item does not exist in the database"
+def handle_type_error(e):
+    return str("meal must be a object"), 400
+
 @functions_framework.http
 def recommendations(request):
+    
     assert request.method == "POST" #checking that the only method used is POST
+
 
     request_json = request.get_json(silent=True)
     meal,recommedation_of=process_input(request_json)
