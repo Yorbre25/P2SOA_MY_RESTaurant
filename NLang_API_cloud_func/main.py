@@ -4,7 +4,7 @@ from scale_messages import get_scales_message
 
 @functions_framework.errorhandler(KeyError)
 def handle_key_error(e):
-    return "Bad Request: the requested parameters were no send", 400
+    return str(e), 400
 
 @functions_framework.errorhandler(AssertionError)
 def handle_assertion_error(e):
@@ -26,13 +26,22 @@ def sentiment_api(request):
     else: 
         raise KeyError("Bad Request: the requested parameters were no send") #if the needed keys are not in the request
     
-    sentiment_json= predict_text_sentiment_analysis_sample(content=review) # make the request to the sentiment analysis model
+    if(type(review)!=str):
+        raise KeyError("The review value must be a string") #wrong key type
 
-    sentiment_scale=sentiment_json['sentiment']
-    sentiment_msg=get_scales_message(sentiment_scale) #getting the message related to the value on the scale
+    try:
+        sentiment_json= predict_text_sentiment_analysis_sample(content=review) # make the request to the sentiment analysis model
 
-    response = { #building the reponse 
-        "scale": sentiment_scale,
-        "msg"  : sentiment_msg
-    }
+        sentiment_scale=sentiment_json['sentiment']
+        sentiment_msg=get_scales_message(sentiment_scale) #getting the message related to the value on the scale
+
+        response = { #building the reponse 
+            "scale": sentiment_scale,
+            "msg"  : sentiment_msg
+        }
+    except:
+        response = { #building the reponse 
+            "scale": 0,
+            "msg"  : "no valid review message, please review your message"
+        }
     return response,200
