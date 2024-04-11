@@ -10,7 +10,7 @@ def get_reservations():
     try:
         # Hacer una solicitud GET al servicio de ExpressJS
         response = requests.post(f"{base_url}/reservation-service", json=request.json)
-        return jsonify(response.text), response.status_code, {'Access-Control-Allow-Origin': '*'}
+        return jsonify(response.json()), response.status_code, {'Access-Control-Allow-Origin': '*'}
 
     except Exception as e:
         return jsonify({"message": f"Error: {e}"}), response.status_code, {}
@@ -19,7 +19,7 @@ def get_reservations():
 def sentiment_api():
     try:
         response = requests.post(f"{base_url}/Sentiment_Review", json=request.json)
-        return jsonify(response.text), response.status_code, {'Access-Control-Allow-Origin': '*'}
+        return jsonify(response.json()), response.status_code, {'Access-Control-Allow-Origin': '*'}
 
     except Exception as e:
         return jsonify({"message": f"Error: {e}"}), response.status_code, {}
@@ -29,7 +29,7 @@ def get_recommendation():
     try:
         # Hacer una solicitud POST al servicio de Sentiment Analysis
         response = requests.post(f"{base_url}/Recommendation_Items", json=request.json)
-        return jsonify(response.text), response.status_code, {'Access-Control-Allow-Origin': '*'}
+        return jsonify(response.json()), response.status_code, {'Access-Control-Allow-Origin': '*'}
     except Exception as e:
         return jsonify({"message": f"Error: {e}"}), response.status_code, {}
 
