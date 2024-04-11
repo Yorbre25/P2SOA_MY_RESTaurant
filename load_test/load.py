@@ -39,3 +39,24 @@ class User(HttpUser):
         url = "/Recommendation_Items"
         headers = {'Content-Type': 'application/json'}
         self.client.post(url, json=recommendation_body, headers=headers)
+    
+    @task
+    def be_get_menu(self):
+        url="/get-menu"
+        self.client.get(url)
+
+    @task
+    def be_post_reservation_request(self):
+        url = "/get-reservations"
+        headers = {'Content-Type': 'application/json'}
+        self.client.post(url, json=review_reservation, headers=headers)
+    @task
+    def be_post_sentiment_analysis_request(self):
+        url = "/sentiment-api"
+        headers = {'Content-Type': 'application/json'}
+        self.client.post(url, json=review_body, headers=headers)
+    @task
+    def be_post_recommendation_request(self):
+        url = "/get-recommendation"
+        headers = {'Content-Type': 'application/json'}
+        self.client.post(url, json=recommendation_body, headers=headers)
