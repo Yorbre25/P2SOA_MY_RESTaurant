@@ -38,7 +38,6 @@ class TestReservationService(unittest.TestCase):
     def test_unavailable_time_slot(self): # Checks unavailability for an occupied time slot
         data = {"fecha": "2024-05-15", "hora": "19:00"}
         response = http_request(f"{url}/get-reservations", "POST", data)
-        print(response.text)
         body = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(body["available"])
