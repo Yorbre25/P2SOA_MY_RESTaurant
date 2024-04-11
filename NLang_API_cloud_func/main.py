@@ -4,11 +4,17 @@ from scale_messages import get_scales_message
 
 @functions_framework.errorhandler(KeyError)
 def handle_key_error(e):
-    return str(e), 400
+    response={
+        'msg':str(e)
+    }
+    return response, 400
 
 @functions_framework.errorhandler(AssertionError)
 def handle_assertion_error(e):
-    return "Method not allowed", 405
+    response={
+        'msg': "Method not allowed"
+    }
+    return response, 405
 
 
 
