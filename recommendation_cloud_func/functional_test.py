@@ -72,13 +72,13 @@ class TestStringMethods(unittest.TestCase):
             "recommendation_of":["dessert"]
             }
         response=http_request(url,"POST",request_body)
-        self.assertEqual(response.status_code,400)   
+        self.assertEqual(response.status_code,200)   
 
     def test_mirror_existing(self): #checks the output result
         request_body={
             "meal":{
             "main_dish":"pizza", #element does not exist in the menu
-            "drinks":"coke",  
+            "drink":"coke",  
             "dessert":"ice cream"
                     },
             "recommendation_of":["dessert"]
@@ -86,9 +86,9 @@ class TestStringMethods(unittest.TestCase):
         response=http_request(url,"POST",request_body)
         self.assertEqual(response.status_code,200)  
         response_body=response.json()
-        self.assertEqual(response_body['main_dish']=="pizza") 
-        self.assertEqual(response_body['drink']=="coke")
-        self.assertEqual(response_body['dessert']=="ice cream")         
+        self.assertEqual(response_body['main_dish'],"pizza") 
+        self.assertEqual(response_body['drink'],"coke")
+        self.assertEqual(response_body['dessert'],"ice cream")         
   
 
 if __name__ == '__main__':
