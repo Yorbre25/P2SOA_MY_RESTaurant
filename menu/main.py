@@ -18,4 +18,4 @@ def get_menu(request):
     menu_json=get_restaurant_menu()
 
     
-    return menu_json,200,headers
+    return menu_json,200
