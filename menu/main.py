@@ -3,7 +3,10 @@ from menu import get_restaurant_menu
 
 @functions_framework.errorhandler(AssertionError)
 def handle_assertion_error(e):
-    return "Method not allowed", 405
+    body={
+        "msg":"Method not allowed"
+    }
+    return body, 405
 
 
 @functions_framework.http
