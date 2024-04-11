@@ -1,6 +1,6 @@
 
 import requests
-url="https://us-central1-smart-spark-418815.cloudfunctions.net/menu_service"
+url="https://backendcloudfunc-x3adwyscpa-uc.a.run.app/get-menu"
 
 def request_restaurant_menu():
     response=requests.get(url)
