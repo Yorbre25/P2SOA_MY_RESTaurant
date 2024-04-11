@@ -1,0 +1,57 @@
+:host{
+    border: 1px solid rgba(128, 128, 128, 0.150);
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 1rem;
+}
+button{
+    width: fit-content;
+    background-color: rgba(var(--main-color), 0.3);
+    border: 1px solid rgba(128, 128, 128, 0.443);
+    border-radius: 5px;
+    align-self: self-start;
+    margin: 0rem 1rem 0rem 1rem;
+    padding: 0.25rem 0.5rem 0.25rem 0.5rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+button:hover{
+    background-color: rgba(var(--main-color), 0.5);
+    transform: scale(1.01);
+}
+.recommedation-section{
+    display: flex;
+    flex-direction: row;
+    padding: 1rem;
+}
+.recommedation-section .description{
+    flex-basis: 0;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+.recommedation-section .description span:nth-child(1){
+    font-size: 1.25rem;
+}
+.recommedation-section .description span:nth-child(2){
+    font-size: 0.90rem;
+    margin: 0.25rem 0.5rem 0.25rem 0.5rem;
+}
+.recommedation-section .meal-list{
+    flex-basis: 0;
+    flex-grow: 1;
+    border: 1px solid rgba(128, 128, 128, 0.150);
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(var(--sec-color), 0.15);
+    padding-bottom: 0.5rem;
+}
+.recommedation-section .meal-list span:nth-child(1){
+    margin: 0.5rem 0.5rem 0.5rem 0.5rem;
+    font-weight: bold;
+}
+.recommended-item {
+    margin-left: 1rem;
+}

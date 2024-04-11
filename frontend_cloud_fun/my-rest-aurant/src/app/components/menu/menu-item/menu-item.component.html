@@ -1,0 +1,7 @@
+@if (mealInfo) {
+    <span #currentMeal class="menu-item">
+        {{mealInfo.Name}} <span class="filler"></span> ₡ {{mealInfo.Price | priceFormat}}
+    </span>
+}@else {
+    No info related with this meal
+}

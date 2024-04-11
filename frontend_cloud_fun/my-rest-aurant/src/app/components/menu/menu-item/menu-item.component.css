@@ -1,0 +1,33 @@
+:host{
+    display: flex;
+    margin: 2px 0 10px 0;
+}
+
+.menu-item {
+    cursor: pointer;
+    background: rgba(var(--main-color), 0.1);
+    border-radius: 5px;
+    padding: 4px 8px 4px 8px;
+    display: flex;
+    justify-content: space-between;
+    width: 100%; 
+    white-space: nowrap;
+    font-size: .85rem;
+    font-weight: bold;
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+
+.menu-item:hover{
+    cursor: pointer;
+    transform: scale(1.01, 1);
+    background: rgba(var(--main-color), 0.5);
+    border-radius: 5px;
+    border: 1px dashed rgba(128, 128, 128, 0.200);
+}
+
+.filler {
+    width: 100%;
+    margin: 0px 10px 0px 10px;
+    border-bottom: 1px dashed grey;
+}

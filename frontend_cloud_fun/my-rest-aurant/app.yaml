@@ -1,0 +1,36 @@
+runtime: python310
+handlers:
+
+# Initial route that will serve up index.html, main entry point to your app
+- url: /
+  secure: always
+  static_files: dist/my-rest-aurant/browser/index.html
+  upload: dist/my-rest-aurant/browser/.*
+
+# Routing for typedoc, assets and favicon.ico to serve directly
+- url: /((?:assets|docs)/.*|favicon\.ico)
+  secure: always
+  redirect_http_response_code: 301
+  static_files: dist/my-rest-aurant/browser/\1
+  upload: dist/my-rest-aurant/browser/.*
+  
+# Routing for any js files
+- url: /(.*\.js)
+  secure: always
+  redirect_http_response_code: 301
+  static_files: dist/my-rest-aurant/browser/\1
+  upload: dist/my-rest-aurant/browser/.*\.js
+
+# Routing for any css files
+- url: /(.*\.css)
+  secure: always
+  redirect_http_response_code: 301
+  static_files: dist/my-rest-aurant/browser/\1
+  mime_type: text/css
+  upload: dist/my-rest-aurant/browser/.*\.css
+  
+# Routing for anything (wild card) after
+- url: /.*
+  secure: always
+  static_files: dist/my-rest-aurant/browser/index.html
+  upload: dist/my-rest-aurant/browser/.*

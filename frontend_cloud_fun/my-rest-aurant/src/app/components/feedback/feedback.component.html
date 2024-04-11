@@ -1,0 +1,13 @@
+<section class="feedback-section">
+    <div class="description">
+        <span>Feedback</span>
+        <span>Please provide your feedback in the next box</span>
+    </div>
+    <textarea class="feedback-input" type="text" placeholder="enter feedback..." #userFeedback></textarea>
+</section>
+<div class="feedback-actions">
+    <button (click) = 'sendFeedback(userFeedback)'>Send Feedback</button>
+    <div class="typewriter">
+        <p #feedbackResponse></p>
+    </div>
+</div>

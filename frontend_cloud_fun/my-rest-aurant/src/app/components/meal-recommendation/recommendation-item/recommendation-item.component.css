@@ -1,0 +1,29 @@
+:host{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: end;
+    margin: 0.25rem 0.75rem 0.25rem 0.75rem;
+    padding: 0.25rem 0.5rem 0.25rem 0.5rem;
+    border: 1px dashed rgba(var(--main-color), 0.5);
+    background-color: rgba(var(--main-color), 0.3);
+    border-radius: 5px;
+}
+.btn-remove{
+    background-color: rgba(255, 0, 0, 0.200);
+    border-radius: 5px;
+    border: 0;
+    padding: 0.25rem;
+    cursor: pointer;
+}
+.btn-remove:hover{
+    transform: scale(1.05);
+}
+.meal-name{
+    white-space: nowrap;
+}
+.filler {
+    width: 100%;
+    margin: 0px 10px 0px 10px;
+    border-bottom: 1px dashed rgba(128, 128, 128, 0.4);
+}

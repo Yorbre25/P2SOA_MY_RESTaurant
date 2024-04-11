@@ -1,0 +1,8 @@
+.navbar {
+    background-color: rgba(var(--main-color), 0.3);
+    padding: 0.1rem 1.5rem 0.1rem 1.5rem;
+    margin-bottom: 15px;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.116);
+    display: flex;
+    justify-content: space-between;
+}

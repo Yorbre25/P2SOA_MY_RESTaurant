@@ -1,0 +1,11 @@
+<section class="reservation-section">
+    <div class="description">
+        <span>Reservation</span>
+        <span>Select your available date to generate reservation options</span>
+    </div>
+    <input class="date-input" type="datetime-local" [(ngModel)]="selectedDateTime">
+</section>
+<button (click)="CheckReservation()">Check reservation</button>
+<p class="response-parag" #message></p>
+<p class="response-parag" #alternative_date></p>
+<p class="response-parag" #alternative_time></p>

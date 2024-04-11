@@ -1,0 +1,17 @@
+<div>
+    <h2>Menu</h2>
+    @for (menuItem of categorizedMeals; track $index){
+        <br>
+        <div class="category-section">
+            <span #categorySection>{{ menuItem.category }}</span>
+            <br>
+            @for (meal of menuItem.meals; track $index){
+                <app-menu-item (click)="onMealItemClick(meal)" [mealInfo]="meal"></app-menu-item>
+            } @empty {
+                Category has no data
+            }
+        </div>
+    } @empty {
+        Menu has no categories
+    }
+</div>

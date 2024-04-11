@@ -1,0 +1,17 @@
+<section class="recommedation-section">
+    <div class="description">
+        <span>Meal Recommendation</span>
+        <span>Select the meals from the menu to base the recommendation on</span>
+    </div>
+    <div class="meal-list">
+        <span>Selected meals:</span>
+        @for (meal of selectedMeals; track $index){
+            <app-recommendation-item [mealInfo]="meal"></app-recommendation-item>
+        }
+    </div>
+</section>
+<button (click)="getRecommendation()">Get Recommendation</button>
+<h4 class="recommended-item">Recommended menu:</h4>
+<p class="recommended-item" #mainDish></p>
+<p class="recommended-item" #drink></p>
+<p class="recommended-item" #dessert></p>
