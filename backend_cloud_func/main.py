@@ -3,36 +3,14 @@ import requests
 
 app = Flask(__name__)
 
-express_service_url = "http://<IP_DEL_SERVICIO>:<PUERTO>"
-base_url = 'https://us-central1-smart-spark-418815.cloudfunctions123.net'
+base_url = 'https://us-central1-smart-spark-418815.cloudfunctions.net'
 
-@app.route('/create-reservation', methods=['POST'])
-def create_reservation():
-    try:
-        # Hacer una solicitud POST al servicio de ExpressJS
-        response = requests.post(f"{express_service_url}/create-reservation", json=request.json)
-        return jsonify(response.json()), response.status_code, {'Access-Control-Allow-Origin': '*'}
-    except Exception as e:
-        return jsonify({"message": f"Error: {e}"}), response.status_code, {}
-
-@app.route('/get-reservations', methods=['GET'])
+@app.route('/get-reservations', methods=['POST'])
 def get_reservations():
     try:
         # Hacer una solicitud GET al servicio de ExpressJS
-        response = requests.get(f"{express_service_url}/get-reservations")
-        return jsonify(response.json()), response.status_code, {'Access-Control-Allow-Origin': '*'}
-
-    except Exception as e:
-        return jsonify({"message": f"Error: no se pudo accesar al servicio de reservas {e}"}), response.status_code, {}
-
-
-@app.route('/recommend-reservation-time', methods=['GET'])
-def recommend_reservation_time():
-
-    try:
-        # Hacer una solicitud GET al servicio de ExpressJS
-        response = requests.get(f"{express_service_url}/recommend-reservation-time", params=request.args)
-        return jsonify(response.json()), response.status_code, {'Access-Control-Allow-Origin': '*'}
+        response = requests.post(f"{base_url}/reservation-service", json=request.json)
+        return jsonify(response.text), response.status_code, {'Access-Control-Allow-Origin': '*'}
 
     except Exception as e:
         return jsonify({"message": f"Error: {e}"}), response.status_code, {}
@@ -45,7 +23,6 @@ def sentiment_api():
 
     except Exception as e:
         return jsonify({"message": f"Error: {e}"}), response.status_code, {}
-
 
 @app.route('/get-recommendation', methods=['POST'])
 def get_recommendation():
