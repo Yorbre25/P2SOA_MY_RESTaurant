@@ -15,7 +15,7 @@ def get_reservations():
             # header and caches preflight response for an 3600s
             headers = {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'POST',
+                'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE,PUT',
                 'Access-Control-Allow-Headers': 'Content-Type',
                 'Access-Control-Max-Age': '3600'
             }
@@ -23,7 +23,8 @@ def get_reservations():
 
         # Set CORS headers for the main request
         headers = {
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE,PUT'
         }
 
         response = requests.post(f"{base_url}/reservation-service", json=request.json)
@@ -42,7 +43,7 @@ def sentiment_api():
             # header and caches preflight response for an 3600s
             headers = {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'POST',
+                'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE,PUT',
                 'Access-Control-Allow-Headers': 'Content-Type',
                 'Access-Control-Max-Age': '3600'
             }
@@ -50,7 +51,8 @@ def sentiment_api():
 
         # Set CORS headers for the main request
         headers = {
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE,PUT'
         }
 
         response = requests.post(f"{base_url}/Sentiment_Review", json=request.json)
@@ -69,7 +71,7 @@ def get_recommendation():
             # header and caches preflight response for an 3600s
             headers = {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'POST',
+                'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE,PUT',
                 'Access-Control-Allow-Headers': 'Content-Type',
                 'Access-Control-Max-Age': '3600'
             }
@@ -77,7 +79,8 @@ def get_recommendation():
 
         # Set CORS headers for the main request
         headers = {
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE,PUT'
         }
         # Hacer una solicitud POST al servicio de Sentiment Analysis
         response = requests.post(f"{base_url}/Recommendation_Items", json=request.json)
